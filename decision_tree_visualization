@@ -1,0 +1,30 @@
+// Decision Tree
+digraph {
+	rankdir=TB
+	"no surfacing" [color=lightblue2 shape=ellipse style=filled]
+	"0
+no" [color=lightblue2 shape=ellipse style=filled]
+	"no surfacing" -> "0
+no"
+	no [color=lightblue2 shape=ellipse style=filled]
+	"0
+no" -> no
+	1 [color=lightblue2 shape=ellipse style=filled]
+	"no surfacing" -> 1
+	flippers [color=lightblue2 shape=ellipse style=filled]
+	1 -> flippers
+	"0
+no" [color=lightblue2 shape=ellipse style=filled]
+	flippers -> "0
+no"
+	no [color=lightblue2 shape=ellipse style=filled]
+	"0
+no" -> no
+	"1
+yes" [color=lightblue2 shape=ellipse style=filled]
+	flippers -> "1
+yes"
+	yes [color=lightblue2 shape=ellipse style=filled]
+	"1
+yes" -> yes
+}
