@@ -13,6 +13,8 @@ class DecisionTree():
         self.X = X
         self.y = y
         self.data = pd.concat([X, y], axis=1)
+        # 所有特征的所有属性值
+        self.column_count = dict([(ds, list(pd.unique(data[ds]))) for ds in data.iloc[:, :-1].columns])
         self.n_features = X.shape[1]
         self.tree = self.built_tree(self.data)
 
@@ -21,24 +23,38 @@ class DecisionTree():
 
     def built_tree(self,data):
         """
-        并没有维护一个包含所有属性值的所有可能取值的字典，因此会存在 属性值缺失的情况。
         :param data:
         :return:
         """
         featlist = list(data.columns)  # 提取出数据集所有的列
         classlist = data.iloc[:, -1].value_counts()  # 获取最后一列类标签
+
         # 当前属性集为空，或是所有样本在所有属性上取值相同，无法划分;
         # 判断最多标签数目是否等于数据集行数，或者数据集是否只有一列
         if data.shape[1] == 1 or classlist[0] == data.shape[0]:
             return classlist.index[0]  # 如果是，返回类标签
+
         axis = self.best_split(data)  # 确定出当前最佳切分列的索引
-        bestfeat = featlist[axis]  # 获取该索引对应的特征
-        myTree = {bestfeat: {}}  # 采用字典嵌套的方式存储树信息
+        best_feature = featlist[axis]  # 获取该索引对应的特征
+        myTree = {best_feature: {}}  # 采用字典嵌套的方式存储树信息
         del featlist[axis]  # 删除当前特征
-        valuelist = set(data.iloc[:, axis])  # 提取最佳切分列所有属性值
+
+        valuelist = pd.unique(data.iloc[:, axis])  # 提取最佳切分列所有属性值
+
+        if len(valuelist) != len(self.column_count[best_feature]):
+            no_exist_attrs = set(self.column_count[best_feature]) - set(valuelist)  # 少的那些特征
+            for no_attr in no_exist_attrs:
+                myTree[best_feature][no_attr] = self.get_most_label(data)
+
+
         for value in valuelist:  # 对每一个属性值递归建树
-            myTree[bestfeat][value] = self.built_tree(self.split(data, axis, value))
+            myTree[best_feature][value] = self.built_tree(self.split(data, axis, value))
         return myTree
+
+    def get_most_label(self,data):
+        data_label = data.iloc[:, -1]
+        label_sort = data_label.value_counts(sort=True)
+        return label_sort.keys()[0]
 
     def split(self,data,axis,value):
         col = data.columns[axis]
@@ -94,7 +110,9 @@ class GainRatioCriteria():
         pass
 
 if __name__ == '__main__':
-    data = pd.read_csv("./data/watermelon2.csv")
+    data = pd.read_csv("./data/watermelon2delete.csv")
+
+
     X = data.iloc[:, 1:-1]
     y = data.iloc[:, -1]
     model = DecisionTree(criteria="GeniCriteria")
