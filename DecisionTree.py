@@ -5,7 +5,7 @@ import sys
 
 class DecisionTree():
     def __init__(self, criteria="EntropyCriteria"):
-        assert criteria in ["EntropyCriteria","GeniCriteria","GainRatioCriteria"],"criteria should be EntropyCriteria,GeniCriteria or GainRatioCriteria "
+        assert criteria in ["EntropyCriteria","GeniCriteria"],"criteria should be EntropyCriteria or GeniCriteria "
         self.criteria = criteria
         self.calculate_criteria = getattr(sys.modules[__name__], criteria)()
 
@@ -35,6 +35,7 @@ class DecisionTree():
             return classlist.index[0]  # 如果是，返回类标签
 
         axis = self.best_split(data)  # 确定出当前最佳切分列的索引
+
         best_feature = featlist[axis]  # 获取该索引对应的特征
         myTree = {best_feature: {}}  # 采用字典嵌套的方式存储树信息
         del featlist[axis]  # 删除当前特征
@@ -46,9 +47,9 @@ class DecisionTree():
             for no_attr in no_exist_attrs:
                 myTree[best_feature][no_attr] = self.get_most_label(data)
 
-
         for value in valuelist:  # 对每一个属性值递归建树
             myTree[best_feature][value] = self.built_tree(self.split(data, axis, value))
+
         return myTree
 
     def get_most_label(self,data):
@@ -104,10 +105,6 @@ class GeniCriteria():
         geni = 1 - (p*p).sum()
         return geni
 
-class GainRatioCriteria():
-
-    def __call__(self, *args, **kwargs):
-        pass
 
 if __name__ == '__main__':
     data = pd.read_csv("./data/watermelon2delete.csv")
@@ -119,4 +116,3 @@ if __name__ == '__main__':
     model.fit(X,y)
     tree = model.tree
     createPlot(tree)
-
